@@ -7,6 +7,7 @@ import requests
 import string
 import urllib
 import RPi.GPIO as GPIO
+from bs4 import BeautifulSoup
 from datetime import datetime
 
 PRINT_OUTPUT = True
@@ -42,6 +43,24 @@ def timeHandler(args):
 
 def dateHandler(args):
     output(datetime.now().strftime("Today is %A, %d. %B %Y"))
+
+def whoIsHandler(args):
+    if "person" in args:
+        person = args["person"]
+        answer = askWebKnox("who is " + person.strip())
+        names = person.split(" ")
+        for name in names:
+            if answer.lower().count(name.lower()) > 1:
+                answer = "I'm not sure about that one, sorry"
+                break
+        output(answer)
+
+def whoPlaysHandler(args):
+    if "person" in args and "title" in args:
+        person = args["person"]
+        title = args["title"]
+        answer = askWebKnox("who plays " + person.strip() + " in " + title.strip())
+        output(answer)
 
 def defaultHandler(message):
     answer = askWolfram(message)
@@ -92,7 +111,7 @@ def output(message):
         os.system("aplay output.wav")
 
 def askWolfram(message):
-    params = {"appid" :WOLFRAM_API_KEY, "i":message, "units":"imperial"}
+    params = {"appid":WOLFRAM_API_KEY, "i":message, "units":"imperial"}
     url_params = urllib.parse.urlencode(params)
     url = "http://api.wolframalpha.com/v1/result?" + url_params
     r = requests.get(url)
@@ -100,7 +119,22 @@ def askWolfram(message):
         answer = r.text
         answer.replace("Wolfram Alpha", "Walter")
     else:
-        answer = "I'm sorry, I don't know how to handle that yet"
+        answer = "I'm sorry, I don't know how to handle that yet."
+    return answer
+
+def askWebKnox(message):
+    querryString = urllib.parse.quote_plus(message)
+    url = "http://webknox.com/" + querryString
+    r = requests.get(url)
+    if r.status_code == 200:
+        soup = BeautifulSoup(r.content, "html.parser")
+        answerBox = soup.find("div", {"class": "answerBox"})
+        if answerBox is not None:
+            answer = answerBox.text
+        if "Nothing found, sorry" in answer:
+            answer = "I couldn't find anything for that one, sorry."
+    else:
+        answer = "I'm not sure about that one, sorry."
     return answer
 
 
@@ -136,6 +170,11 @@ manager.newRule("whats the time in <location>", timeHandler)
 manager.newRule("what time is it", timeHandler)
 manager.newRule("whats the time", timeHandler)
 manager.newRule("what day is it", dateHandler)
+#who is
+manager.newRule("who is <person>", whoIsHandler)
+#who plays
+manager.newRule("who plays <person> in <title>", whoPlaysHandler)
+manager.newRule("who played <person> in <title>", whoPlaysHandler)
 #defualt
 manager.setDefaultCallback(defaultHandler)
 
