@@ -1,0 +1,7 @@
+__pycache__/
+snowboydecoder.py
+_snowboydetect.so
+resources
+resource/
+snowboydetect.py
+loadKeys.sh

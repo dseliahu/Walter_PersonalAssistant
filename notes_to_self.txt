@@ -1,0 +1,15 @@
+#snowboy
+follow Rpi sound setup instructions on snowboy website (not github)
+
+change swig/Python3/make to say SWIG := swig3.0  (instructions at: https://groups.google.com/a/kitt.ai/forum/#!topic/snowboy-discussion/0AVNiHRTTBY)
+
+compile from source, on Rpi, for swig/Python3
+
+
+#For speech recognition
+sudo apt-get install flac
+pip3 install SpeechRecognition
+
+
+#For pico2wave tts
+sudo apt-get install libttspico-utils
