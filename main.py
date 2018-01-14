@@ -5,14 +5,15 @@ import signal
 import os
 import requests
 import string
+import sys
 import urllib
 import RPi.GPIO as GPIO
 from bs4 import BeautifulSoup
 from datetime import datetime
 
 PRINT_OUTPUT = True
-SPEAK_OUTPUT = False
-SPEAK_INPUT = False
+SPEAK_OUTPUT = True
+SPEAK_INPUT = True
 
 ##### Handler Functions #######
 def lightHandler(args):
@@ -62,6 +63,12 @@ def whoPlaysHandler(args):
         answer = askWebKnox("who plays " + person.strip() + " in " + title.strip())
         output(answer)
 
+def sayHiHandler(args):
+    if "person" in args:
+        person = args["person"]
+        answer = "Hello " + person + "! It is very nice to meet you."
+        output(answer)
+
 def defaultHandler(message):
     answer = askWolfram(message)
     output(answer)
@@ -107,8 +114,13 @@ def output(message):
         print(message)
 
     if SPEAK_OUTPUT:
-        os.system("pico2wave -w output.wav \"" + message + "\"")
-        os.system("aplay output.wav")
+        if sys.platform == "darwin":
+            cmd = "say " + message.strip().replace('\'', '\\\'')
+            print("command was: " + cmd)
+            os.system(cmd)
+        else:
+            os.system("pico2wave -w output.wav \"" + message + "\"")
+            os.system("aplay output.wav")
 
 def askWolfram(message):
     params = {"appid":WOLFRAM_API_KEY, "i":message, "units":"imperial"}
@@ -159,6 +171,8 @@ manager.newRule("turn my lights <value>", lightHandler)
 manager.newRule("turn <value> the lights", lightHandler)
 manager.newRule("turn <value> my lights", lightHandler)
 manager.newRule("lights <value>", lightHandler)
+#say hi
+manager.newRule("say hi to <person>", sayHiHandler)
 #echo
 manager.newRule("repeat this phrase <phrase>",  echoHandler)
 manager.newRule("say <phrase>", echoHandler)
