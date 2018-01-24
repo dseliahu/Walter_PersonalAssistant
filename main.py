@@ -8,6 +8,7 @@ import string
 import sys
 import urllib
 import RPi.GPIO as GPIO
+import random
 from bs4 import BeautifulSoup
 from datetime import datetime
 
@@ -69,10 +70,14 @@ def sayHiHandler(args):
         answer = "Hello " + person + "! It is very nice to meet you."
         output(answer)
 
+def palindromeHandler(message):
+    lines = open('content/palindromes.txt').read().splitlines()
+    answer = random.choice(lines)
+    output(answer)
+
 def defaultHandler(message):
     answer = askWolfram(message)
     output(answer)
-
 
 ###### snowboy callbacks ########
 def audioRecorderCallback(fname):
@@ -115,8 +120,8 @@ def output(message):
 
     if SPEAK_OUTPUT:
         if sys.platform == "darwin":
-            cmd = "say " + message.strip().replace('\'', '\\\'')
-            print("command was: " + cmd)
+            cmd = "say " + message.strip().replace(';', '').replace('\'', '\\\'')
+            # print("command was: " + cmd)
             os.system(cmd)
         else:
             os.system("pico2wave -w output.wav \"" + message + "\"")
@@ -189,6 +194,8 @@ manager.newRule("who is <person>", whoIsHandler)
 #who plays
 manager.newRule("who plays <person> in <title>", whoPlaysHandler)
 manager.newRule("who played <person> in <title>", whoPlaysHandler)
+#palindromes
+manager.newRule("tell me a palindrome", palindromeHandler)
 #defualt
 manager.setDefaultCallback(defaultHandler)
 
