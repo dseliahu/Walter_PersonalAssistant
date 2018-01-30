@@ -1,6 +1,3 @@
-import re
-
-
 LEADING_PLEASANTRIES = ["could you", "can you", "would you", "will you", "please", "thank you"]
 TRAILING_PLEASANTRIES = ["please"]
 
@@ -52,7 +49,7 @@ class Phrase(object):
 
 
 
-  def parse(self, message):
+  def checkMessage(self, message):
     message = stripPleasantries(message)
     args = {}
     blockIndex = 0
@@ -105,7 +102,7 @@ class messageManager(object):
     for rule in self.rules:
       phrase = rule[0]
       callback = rule[1]
-      match = phrase.parse(message)
+      match = phrase.checkMessage(message)
       isMatch = match[0]
       args = match[1]
       if isMatch:
